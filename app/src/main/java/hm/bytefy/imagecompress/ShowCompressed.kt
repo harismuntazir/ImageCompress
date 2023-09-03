@@ -1,24 +1,26 @@
 package hm.bytefy.imagecompress
 
-import android.os.Bundle
-import androidx.activity.ComponentActivity
+import android.net.Uri
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Button
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import hm.bytefy.imagecompress.ui.theme.ImageCompressTheme
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.res.painterResource
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
+import coil.annotation.ExperimentalCoilApi
+import hm.bytefy.imagecompress.ui.theme.ImageCompressTheme
+import java.io.File
+import coil.compose.rememberImagePainter
+import hm.bytefy.imagecompress.tools.Utils
 
-class ShowCompressed : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
+
+class ShowCompressed : AppCompatActivity() {
+    @OptIn(ExperimentalCoilApi::class)
+    override fun onCreate(savedInstanceState: android.os.Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             ImageCompressTheme {
@@ -27,15 +29,25 @@ class ShowCompressed : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    ImageComparisonScreen(
-                        originalImage = R.drawable.image,
-                        compressedImage = R.drawable.image,
-                        originalSize = "2.5 MB",
-                        compressedSize = "95.45 KB",
-                        { finish() },
-                        {finish() }
-                    )
+                    // get data ready
+                    val orgImage = intent.getStringExtra("imageUri")?.let { Uri.parse(it) }
+                    val compressedFile = File(cacheDir, "compressed_image.jpg").toURI()
 
+                    val originalPainter = rememberImagePainter(orgImage)
+                    val compressedPainter = rememberImagePainter(compressedFile)
+
+                    val originalSize = Utils(this).getFileSize(orgImage!!)
+                    val compressedSize = Utils(this).getFileSize(Uri.parse(compressedFile.toString()))
+
+                    // Existing settings UI
+                    ImageComparisonScreen(
+                        originalPainter = originalPainter,
+                        compressedPainter = compressedPainter,
+                        originalSize = originalSize,
+                        compressedSize = compressedSize,
+                        onBack = { finish() },
+                        onSave = { finish() }
+                    )
                 }
             }
         }
@@ -44,30 +56,40 @@ class ShowCompressed : ComponentActivity() {
 
 @Composable
 fun ImageComparisonScreen(
-    originalImage: Int, // Resource ID for original image
-    compressedImage: Int, // Resource ID for compressed image
-    originalSize: String, // Original image size
-    compressedSize: String, // Compressed image size
+    originalPainter: Painter,
+    compressedPainter: Painter,
+    originalSize: String,
+    compressedSize: String,
     onBack: () -> Unit,
     onSave: () -> Unit
 ) {
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
+        // the size of original image
+        Box(
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth(),
+            contentAlignment = androidx.compose.ui.Alignment.Center
+        ) {
+            Text(text = "Size: $originalSize", modifier = Modifier.align(androidx.compose.ui.Alignment.TopCenter))
+        }
         // Original Image Row
         Box(
             modifier = Modifier
                 .weight(1f)
                 .fillMaxWidth()
                 .padding(8.dp),
-            contentAlignment = Alignment.Center
+            contentAlignment = androidx.compose.ui.Alignment.Center
         ) {
             Image(
-                painter = painterResource(id = originalImage),
+                painter = originalPainter,
                 contentDescription = "Original Image",
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Crop
             )
-            Text(text = "Size: $originalSize", modifier = Modifier.align(Alignment.TopCenter))
+            Text(text = "Size: $originalSize", modifier = Modifier.align(androidx.compose.ui.Alignment.TopCenter))
         }
 
         // Compressed Image Row
@@ -76,14 +98,15 @@ fun ImageComparisonScreen(
                 .weight(1f)
                 .fillMaxWidth()
                 .padding(8.dp),
-            contentAlignment = Alignment.Center
+            contentAlignment = androidx.compose.ui.Alignment.Center
         ) {
             Image(
-                painter = painterResource(id = compressedImage),
+                painter = compressedPainter,
                 contentDescription = "Compressed Image",
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Crop
             )
-            Text(text = "Size: $compressedSize", modifier = Modifier.align(Alignment.TopCenter))
+            Text(text = "Size: $compressedSize", modifier = Modifier.align(androidx.compose.ui.Alignment.TopCenter))
         }
 
         // Buttons Row
@@ -96,7 +119,7 @@ fun ImageComparisonScreen(
             Button(onClick = onBack) {
                 Text(text = "Back")
             }
-            Button(onClick = { onSave }) {
+            Button(onClick = onSave) {
                 Text(text = "Save Image")
             }
         }

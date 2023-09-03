@@ -24,11 +24,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardType.Companion.Uri
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModelProvider
-import hm.bytefy.imagecompress.compression.CompressImage
-import hm.bytefy.imagecompress.lib.Lib
+import hm.bytefy.imagecompress.tools.CompressImage
 import hm.bytefy.imagecompress.ui.theme.ImageCompressTheme
 import hm.bytefy.imagecompress.viewmodels.ChooseSettingsViewModel
 
@@ -166,6 +164,7 @@ fun SettingsScreens(context: Context) {
                     if (isCompressed) {
                         // Open the compressed image in a new activity
                         val intent = Intent(context, ShowCompressed::class.java)
+                        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
                         intent.putExtra("imageUri", originalImage.toString())
                         context.startActivity(intent)
                     }
