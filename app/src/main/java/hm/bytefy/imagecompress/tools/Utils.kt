@@ -3,6 +3,7 @@ package hm.bytefy.imagecompress.tools
 import android.content.Context
 import android.net.Uri
 import android.provider.MediaStore
+import android.provider.OpenableColumns
 import java.io.InputStream
 class Utils(private val context: Context) {
     fun getFileSize(uri: Uri): String {
@@ -18,22 +19,15 @@ class Utils(private val context: Context) {
         }
     }
 
-
-    // get Image ID from Uri
-    fun getImageId(uri: Uri): String? {
-        val projection = arrayOf(MediaStore.Images.Media._ID)
-        val cursor = context.contentResolver.query(uri, projection, null, null, null)
-
-        try {
-            cursor?.let {
-                if (it.moveToFirst()) {
-                    val columnIndex = it.getColumnIndexOrThrow(MediaStore.Images.Media._ID)
-                    return it.getString(columnIndex)
-                }
-            }
-        } finally {
-            cursor?.close()
+    // get file name from Uri
+    fun getFileName(uri: Uri, context: Context): String? {
+        var fileName: String? = null
+        context.contentResolver.query(uri, null, null, null, null)?.use { cursor ->
+            val nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+            cursor.moveToFirst()
+            fileName = cursor.getString(nameIndex)
         }
-        return null
+        return fileName
     }
+
 }

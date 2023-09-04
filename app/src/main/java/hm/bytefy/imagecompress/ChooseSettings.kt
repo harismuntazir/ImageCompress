@@ -26,6 +26,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModelProvider
+import hm.bytefy.imagecompress.lib.Lib
 import hm.bytefy.imagecompress.tools.CompressImage
 import hm.bytefy.imagecompress.ui.theme.ImageCompressTheme
 import hm.bytefy.imagecompress.viewmodels.ChooseSettingsViewModel
